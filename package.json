@@ -11,7 +11,8 @@
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run lint"
+    "posttest": "npm run lint",
+    "server": "ts-node src/index.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
