@@ -28,7 +28,7 @@ A Telegram bot implementation of the "Mr. Undercover" social deduction game with
 
 5. **Run the bot**
    ```
-   python soccer_undercover_bot.py
+   python main.py
    ```
 
 ## Game Rules
