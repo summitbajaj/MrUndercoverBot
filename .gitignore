@@ -5,3 +5,5 @@
 .env.test
 .env.production
 .env.*
+# pycache
+__pycache__/

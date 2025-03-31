@@ -59,11 +59,13 @@ A Telegram bot implementation of the "Mr. Undercover" social deduction game with
 | `/newgame` | Create a new game |
 | `/join` | Join an existing game |
 | `/start` | Start the game after players have joined |
-| `/done` | Indicate player has finished their turn |
+| `/done [description]` | Finish your turn with optional description |
 | `/next` | Move to the next player (for in-person games) |
 | `/allspoken` | Skip to voting phase |
 | `/vote @username` | Cast vote to eliminate a player |
+| `/clues` | Show all descriptions from the current round |
 | `/settings` | Configure game options |
+| `/end` | End the current game |
 | `/help` | Show available commands |
 
 ## Configuration Options
@@ -86,9 +88,43 @@ A Telegram bot implementation of the "Mr. Undercover" social deduction game with
   ```
   Note: Setting any count to 0 will enable automatic distribution based on player count.
 
+## Features
+
+- **Modular code structure**: The code is organized into different modules for better maintainability
+- **Descriptive commands**: Commands show up with descriptions when typing `/` in Telegram
+- **Settings persistence**: Game settings persist between games in the same chat
+- **Role validation**: Ensures role allocations make sense for the number of players
+- **Player descriptions**: Stores what players say with the `/done` command
+- **Better role messaging**: Players don't know if they're civilians or undercover
+- **Mr. White endgame**: Special handling when only Mr. White and one other player remain
+
+## Project Structure
+
+```
+soccer_mr_undercover/
+├── main.py                  # Entry point, minimal code to start the bot
+├── models/
+│   ├── __init__.py
+│   ├── player.py            # Player class
+│   ├── game.py              # Game class
+│   └── enums.py             # Role and GameState enums
+├── handlers/
+│   ├── __init__.py
+│   ├── command_handlers.py  # All command handlers
+│   ├── game_handlers.py     # Game-specific handlers
+│   └── mr_white_handler.py  # Mr. White guessing handler
+├── utils/
+│   ├── __init__.py
+│   ├── settings.py          # Settings validation and persistence
+│   └── message_utils.py     # Message formatting utilities
+├── data/
+│   └── soccer_player_pairs.json
+└── config.py                # Configuration and global variables
+```
+
 ## Adding Custom Soccer Player Pairs
 
-Edit the `soccer_player_pairs.json` file to add, remove, or modify player pairs. The format is:
+Edit the `data/soccer_player_pairs.json` file to add, remove, or modify player pairs. The format is:
 
 ```json
 [
