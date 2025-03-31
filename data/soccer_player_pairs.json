@@ -118,5 +118,125 @@
     {
         "civilian": "David Silva",
         "undercover": "Mesut Özil"
+    },
+    {
+        "civilian": "Thierry Henry",
+        "undercover": "Didier Drogba"
+    },
+    {
+        "civilian": "David Beckham",
+        "undercover": "Steven Gerrard"
+    },
+    {
+        "civilian": "Zinedine Zidane",
+        "undercover": "Ronaldinho"
+    },
+    {
+        "civilian": "Iker Casillas",
+        "undercover": "Gianluigi Buffon"
+    },
+    {
+        "civilian": "Frank Lampard",
+        "undercover": "Paul Scholes"
+    },
+    {
+        "civilian": "Roberto Carlos",
+        "undercover": "Cafu"
+    },
+    {
+        "civilian": "Kylian Mbappé",
+        "undercover": "Neymar Jr"
+    },
+    {
+        "civilian": "Paolo Maldini",
+        "undercover": "Fabio Cannavaro"
+    },
+    {
+        "civilian": "Andrés Iniesta",
+        "undercover": "Xavi Hernández"
+    },
+    {
+        "civilian": "Wayne Rooney",
+        "undercover": "Sergio Agüero"
+    },
+    {
+        "civilian": "Oliver Kahn",
+        "undercover": "Peter Schmeichel"
+    },
+    {
+        "civilian": "Karim Benzema",
+        "undercover": "Luis Suárez"
+    },
+    {
+        "civilian": "Rio Ferdinand",
+        "undercover": "John Terry"
+    },
+    {
+        "civilian": "Mohamed Salah",
+        "undercover": "Eden Hazard"
+    },
+    {
+        "civilian": "Patrick Vieira",
+        "undercover": "Roy Keane"
+    },
+    {
+        "civilian": "Carles Puyol",
+        "undercover": "Sergio Ramos"
+    },
+    {
+        "civilian": "Luka Modric",
+        "undercover": "Toni Kroos"
+    },
+    {
+        "civilian": "Ronaldo Nazário",
+        "undercover": "Zlatan Ibrahimović"
+    },
+    {
+        "civilian": "Rivaldo",
+        "undercover": "Kaká"
+    },
+    {
+        "civilian": "Robert Lewandowski",
+        "undercover": "Harry Kane"
+    },
+    {
+        "civilian": "Manchester United",
+        "undercover": "Liverpool"
+    },
+    {
+        "civilian": "Real Madrid",
+        "undercover": "Barcelona"
+    },
+    {
+        "civilian": "Bayern Munich",
+        "undercover": "Borussia Dortmund"
+    },
+    {
+        "civilian": "AC Milan",
+        "undercover": "Inter Milan"
+    },
+    {
+        "civilian": "Arsenal",
+        "undercover": "Tottenham"
+    },
+    {
+        "civilian": "Juventus",
+        "undercover": "AC Milan"
+    },
+    {
+        "civilian": "Chelsea",
+        "undercover": "Arsenal"
+    },
+    {
+        "civilian": "Manchester City",
+        "undercover": "Manchester United"
+    },
+    {
+        "civilian": "PSG",
+        "undercover": "Marseille"
+    },
+    {
+        "civilian": "Ajax",
+        "undercover": "PSV Eindhoven"
     }
 ]
