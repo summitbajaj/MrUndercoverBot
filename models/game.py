@@ -138,22 +138,33 @@ class Game:
         if current_player_id:
             self.players[current_player_id].has_spoken = True
 
+        # Check if all non-eliminated players have spoken
+        all_spoken = True
+        for player_id, player in self.players.items():
+            if not player.eliminated and not player.has_spoken:
+                all_spoken = True
+                break
+        
+        # If all have spoken, move to voting
+        if all_spoken:
+            self.state = GameState.VOTING
+            return None
+
         # Find next non-eliminated player
         original_idx = self.current_turn_idx
         while True:
             self.current_turn_idx = (self.current_turn_idx + 1) % len(self.turn_order)
             next_player_id = self.turn_order[self.current_turn_idx]
+            
+            # If we've gone full circle, everyone has spoken
+            if self.current_turn_idx == original_idx:
+                self.state = GameState.VOTING
+                return None
+                
+            # Skip eliminated players
             if not self.players[next_player_id].eliminated:
-                # If we've gone full circle, everyone has spoken
-                if self.current_turn_idx == original_idx:
-                    self.state = GameState.VOTING
-                    return None
                 # Found next active player
                 return next_player_id
-            # If we've gone full circle and everyone is eliminated, game is over
-            if self.current_turn_idx == original_idx:
-                self.state = GameState.GAME_OVER
-                return None
 
     def get_current_player_id(self) -> Optional[int]:
         """Get the current player's user_id"""

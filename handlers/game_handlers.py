@@ -47,15 +47,43 @@ async def done_turn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Generate response text based on whether description was provided
     response_text = generate_player_turn_message(game, user_id, description)
 
+    # Mark current player as having spoken
+    game.players[user_id].has_spoken = True
+    
+    # Check if this was the last player to speak
+    all_spoken = True
+    for player_id, player in game.players.items():
+        if not player.eliminated and not player.has_spoken:
+            all_spoken = False
+            break
+    
+    # If all players have spoken, move to voting phase
+    if all_spoken:
+        game.state = GameState.VOTING
+        voting_message = generate_voting_phase_message()
+        await update.message.reply_text(
+            f"{response_text}\n\n"
+            f"🗳️ {voting_message}\n\n"
+            f"Use /vote @username to vote for who you think is the Undercover or Mr. White."
+        )
+        return
+    
+    # Otherwise, move to next player
     next_player_id = game.next_turn()
     if next_player_id:
         # Continue to next player
         next_player_message = generate_next_player_message(game, next_player_id)
         await update.message.reply_text(f"{response_text}\n\n{next_player_message}")
     else:
-        # Round over, move to voting
+        # This is a fallback in case next_turn returns None but we haven't detected all_spoken
+        # (This shouldn't happen with the fixed logic, but it's a safety measure)
+        game.state = GameState.VOTING
         voting_message = generate_voting_phase_message()
-        await update.message.reply_text(f"{response_text}\n\n{voting_message}")
+        await update.message.reply_text(
+            f"{response_text}\n\n"
+            f"🗳️ {voting_message}\n\n"
+            f"Use /vote @username to vote for who you think is the Undercover or Mr. White."
+        )
 
 
 async def next_player(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -217,11 +245,13 @@ async def vote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                     if winner:
                         await game_over(update, context, winner)
                     else:
-                        # Display next player
+                        # Display next player - IMPROVED TRANSITION MESSAGING
                         next_player_id = game.get_current_player_id()
                         await update.message.reply_text(
-                            f"Round {game.round_number} begins!\n"
-                            f"First player: {game.players[next_player_id].display_name()}"
+                            f"📢 Round {game.round_number} begins!\n\n"
+                            f"Players should take turns describing their soccer player without naming them.\n"
+                            f"First player: {game.players[next_player_id].display_name()}\n\n"
+                            f"When finished with your turn, use /done followed by your description."
                         )
             else:
                 # No elimination (tie with 'none' tiebreaker)
@@ -232,11 +262,13 @@ async def vote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 # Reset for next round
                 game._prepare_next_round()
                 
-                # Start next round
+                # Start next round - IMPROVED TRANSITION MESSAGING
                 next_player_id = game.get_current_player_id()
                 await update.message.reply_text(
-                    f"Round {game.round_number} begins!\n"
-                    f"First player: {game.players[next_player_id].display_name()}"
+                    f"📢 Round {game.round_number} begins!\n\n"
+                    f"Players should take turns describing their soccer player without naming them.\n"
+                    f"First player: {game.players[next_player_id].display_name()}\n\n"
+                    f"When finished with your turn, use /done followed by your description."
                 )
     else:
         await update.message.reply_text(
