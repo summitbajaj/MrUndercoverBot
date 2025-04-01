@@ -138,11 +138,11 @@ class Game:
         if current_player_id:
             self.players[current_player_id].has_spoken = True
 
-        # Check if all non-eliminated players have spoken
+        # Check if all players have spoken
         all_spoken = True
         for player_id, player in self.players.items():
             if not player.eliminated and not player.has_spoken:
-                all_spoken = True
+                all_spoken = False
                 break
         
         # If all have spoken, move to voting
@@ -150,21 +150,31 @@ class Game:
             self.state = GameState.VOTING
             return None
 
-        # Find next non-eliminated player
+        # Find next non-eliminated player who hasn't spoken
         original_idx = self.current_turn_idx
-        while True:
+        found_next_player = False
+        
+        # Loop through players to find the next one
+        for _ in range(len(self.turn_order)):
             self.current_turn_idx = (self.current_turn_idx + 1) % len(self.turn_order)
             next_player_id = self.turn_order[self.current_turn_idx]
             
-            # If we've gone full circle, everyone has spoken
+            # If we've gone full circle back to original player, everyone has spoken
             if self.current_turn_idx == original_idx:
-                self.state = GameState.VOTING
-                return None
+                break
                 
-            # Skip eliminated players
-            if not self.players[next_player_id].eliminated:
-                # Found next active player
-                return next_player_id
+            # Skip eliminated players and those who have already spoken
+            if not self.players[next_player_id].eliminated and not self.players[next_player_id].has_spoken:
+                found_next_player = True
+                break
+        
+        # If no suitable next player was found, move to voting
+        if not found_next_player:
+            self.state = GameState.VOTING
+            return None
+            
+        # Return the next player's ID
+        return self.turn_order[self.current_turn_idx]
 
     def get_current_player_id(self) -> Optional[int]:
         """Get the current player's user_id"""

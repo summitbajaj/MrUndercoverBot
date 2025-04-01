@@ -50,15 +50,14 @@ async def done_turn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Mark current player as having spoken
     game.players[user_id].has_spoken = True
     
-    # Check if this was the last player to speak
-    all_spoken = True
+    # Count how many non-eliminated players have not spoken yet
+    remaining_speakers = 0
     for player_id, player in game.players.items():
         if not player.eliminated and not player.has_spoken:
-            all_spoken = False
-            break
+            remaining_speakers += 1
     
-    # If all players have spoken, move to voting phase
-    if all_spoken:
+    # If nobody left to speak, move to voting phase
+    if remaining_speakers == 0:
         game.state = GameState.VOTING
         voting_message = generate_voting_phase_message()
         await update.message.reply_text(
@@ -75,7 +74,7 @@ async def done_turn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         next_player_message = generate_next_player_message(game, next_player_id)
         await update.message.reply_text(f"{response_text}\n\n{next_player_message}")
     else:
-        # This is a fallback in case next_turn returns None but we haven't detected all_spoken
+        # This is a fallback in case next_turn returns None but we still have remaining speakers
         # (This shouldn't happen with the fixed logic, but it's a safety measure)
         game.state = GameState.VOTING
         voting_message = generate_voting_phase_message()

@@ -57,20 +57,44 @@ async def handle_mr_white_guess(update: Update, context: ContextTypes.DEFAULT_TY
     # Handle game state
     if correct:
         from models.enums import Role
-        await game_over(None, context, Role.MR_WHITE, chat_id)
+        try:
+            await game_over(None, context, Role.MR_WHITE, chat_id)
+        except Exception as e:
+            logger.error(f"Error ending game after Mr. White win: {e}")
+            await context.bot.send_message(
+                chat_id=chat_id,
+                text="Mr. White won! Game has ended."
+            )
+            if chat_id in games:
+                del games[chat_id]
     else:
+        # Mr. White lost, continue the game
         game.reset_after_mr_white_guess(False)
+        
+        # Explicitly prepare for the next round
+        game.state = GameState.PLAYING
         
         # Check if game should continue
         winner = game.check_win_condition()
         if winner:
-            await game_over(None, context, winner, chat_id)
+            try:
+                await game_over(None, context, winner, chat_id)
+            except Exception as e:
+                logger.error(f"Error ending game after win condition: {e}")
+                await context.bot.send_message(
+                    chat_id=chat_id,
+                    text=f"Game over! The {winner.value.upper()} players have won!"
+                )
+                if chat_id in games:
+                    del games[chat_id]
         else:
             # Continue with next player
             next_player_id = game.get_current_player_id()
             if next_player_id:
                 await context.bot.send_message(
                     chat_id=chat_id,
-                    text=f"Round {game.round_number} begins!\n"
-                          f"First player: {game.players[next_player_id].display_name()}"
+                    text=f"📢 Round {game.round_number} begins!\n\n"
+                         f"Players should take turns describing their soccer player without naming them.\n"
+                         f"First player: {game.players[next_player_id].display_name()}\n\n"
+                         f"When finished with your turn, use /done followed by your description."
                 )

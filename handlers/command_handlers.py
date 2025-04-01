@@ -391,7 +391,10 @@ async def end_game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             summary = "🛑 Game terminated!\n\n"
             
             if game.civilian_word and game.undercover_word:
-                summary += f"The words were:\n- Civilians: *{game.civilian_word}*\n- Undercover: *{game.undercover_word}*\n\n"
+                # Escape Markdown characters in player names
+                civilian_word = game.civilian_word.replace("*", "\\*").replace("_", "\\_")
+                undercover_word = game.undercover_word.replace("*", "\\*").replace("_", "\\_")
+                summary += f"The words were:\n- Civilians: {civilian_word}\n- Undercover: {undercover_word}\n\n"
             
             summary += "Player Roles:\n"
             for player in game.players.values():
@@ -400,7 +403,8 @@ async def end_game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 else:
                     summary += f"- {player.display_name()}: (No role assigned)\n"
             
-            await update.message.reply_text(summary, parse_mode="Markdown")
+            # Send without Markdown parsing to avoid errors
+            await update.message.reply_text(summary)
         else:
             # Game was created but never started
             if len(game.players) > 0:
@@ -432,24 +436,73 @@ async def game_over(
     chat_id: Optional[int] = None
 ) -> None:
     """Handle game over condition."""
-    if not chat_id and update:
-        chat_id = update.effective_chat.id
-    
-    if not chat_id or chat_id not in games:
-        return
-    
-    game = games[chat_id]
-    game.state = GameState.GAME_OVER
-    
-    # Send final message
-    await context.bot.send_message(
-        chat_id=chat_id,
-        text=generate_game_over_message(game, winner),
-        parse_mode="Markdown"
-    )
-    
-    # Remove game from active games
-    del games[chat_id]
+    try:
+        if not chat_id and update:
+            chat_id = update.effective_chat.id
+        
+        if not chat_id or chat_id not in games:
+            return
+        
+        game = games[chat_id]
+        game.state = GameState.GAME_OVER
+        
+        # Count final statistics
+        civilians = [p for p in game.players.values() if p.role == Role.CIVILIAN]
+        undercovers = [p for p in game.players.values() if p.role == Role.UNDERCOVER]
+        mr_whites = [p for p in game.players.values() if p.role == Role.MR_WHITE]
+        
+        alive_civilians = [p for p in civilians if not p.eliminated]
+        alive_undercovers = [p for p in undercovers if not p.eliminated]
+        alive_mr_whites = [p for p in mr_whites if not p.eliminated]
+        
+        # Create winner message with explanation
+        if winner == Role.CIVILIAN:
+            winner_message = "🎉 The CIVILIANS have won! 🎉\nThey successfully eliminated all Undercover and Mr. White players."
+        elif winner == Role.UNDERCOVER:
+            winner_message = "🎭 The UNDERCOVER players have won! 🎭\nThey successfully infiltrated and outnumbered the Civilians."
+        else:  # Mr. White
+            winner_message = "🃏 MR. WHITE has won with a correct guess! 🃏\nThey successfully identified the Civilians' soccer player."
+        
+        # Create game summary - Escape any Markdown characters
+        civilian_word = game.civilian_word.replace("*", "\\*").replace("_", "\\_") if game.civilian_word else "None"
+        undercover_word = game.undercover_word.replace("*", "\\*").replace("_", "\\_") if game.undercover_word else "None"
+        
+        summary = (
+            f"{winner_message}\n\n"
+            f"Game Summary:\n"
+            f"- Civilians ({len(alive_civilians)}/{len(civilians)} remaining): "
+            f"Soccer player was {civilian_word}\n"
+            f"- Undercover ({len(alive_undercovers)}/{len(undercovers)} remaining): "
+            f"Soccer player was {undercover_word}\n"
+            f"- Mr. White ({len(alive_mr_whites)}/{len(mr_whites)} remaining)\n\n"
+            f"Player Roles:\n"
+        )
+        
+        # Add all player roles
+        for player in game.players.values():
+            status = "ALIVE" if not player.eliminated else "eliminated"
+            summary += f"- {player.display_name()}: {player.role.value.upper()} ({status})\n"
+        
+        summary += "\nGame over! Start a new game with /newgame"
+        
+        # Send final message without parse_mode to avoid Markdown errors
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=summary
+        )
+        
+        # Remove game from active games
+        del games[chat_id]
+        
+    except Exception as e:
+        logger.error(f"Error in game_over: {e}")
+        # Try to clean up anyway
+        if chat_id and chat_id in games:
+            del games[chat_id]
+            await context.bot.send_message(
+                chat_id=chat_id,
+                text="Game over! The game has ended."
+            )
 
 
 async def setup_bot_commands(application):

@@ -90,14 +90,17 @@ def generate_game_over_message(game: Game, winner: Role) -> str:
     else:  # Mr. White
         winner_message = "🃏 MR. WHITE has won with a correct guess! 🃏\nThey successfully identified the Civilians' soccer player."
     
-    # Create game summary
+    # Create game summary - Escape any Markdown characters
+    civilian_word = game.civilian_word.replace("*", "\\*").replace("_", "\\_") if game.civilian_word else "None"
+    undercover_word = game.undercover_word.replace("*", "\\*").replace("_", "\\_") if game.undercover_word else "None"
+    
     summary = (
         f"{winner_message}\n\n"
         f"Game Summary:\n"
         f"- Civilians ({len(alive_civilians)}/{len(civilians)} remaining): "
-        f"Soccer player was *{game.civilian_word}*\n"
+        f"Soccer player was {civilian_word}\n"
         f"- Undercover ({len(alive_undercovers)}/{len(undercovers)} remaining): "
-        f"Soccer player was *{game.undercover_word}*\n"
+        f"Soccer player was {undercover_word}\n"
         f"- Mr. White ({len(alive_mr_whites)}/{len(mr_whites)} remaining)\n\n"
         f"Player Roles:\n"
     )
