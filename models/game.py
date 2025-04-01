@@ -277,7 +277,8 @@ class Game:
             player.has_voted = False
             player.vote_target = None
             player.has_spoken = False
-            player.description = None  # Clear descriptions between rounds
+            # Don't clear descriptions between rounds
+            # player.description = None  # This line should be removed/commented
 
         # Increment round number
         self.round_number += 1

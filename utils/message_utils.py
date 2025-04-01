@@ -115,19 +115,27 @@ def generate_game_over_message(game: Game, winner: Role) -> str:
     return summary
 
 def generate_clues_message(game: Game) -> str:
-    """Generate a message with all player descriptions from the current round."""
+    """Generate a message with all player descriptions from the current and previous rounds."""
     descriptions = []
+    
+    # Group descriptions by players
+    player_descriptions = {}
     for user_id, player in game.players.items():
-        if player.description and not player.eliminated:
-            descriptions.append(f"{player.display_name()}: \"{player.description}\"")
-        elif player.description and player.eliminated:
-            descriptions.append(f"❌ {player.display_name()}: \"{player.description}\"")
+        if player.description:
+            if player.display_name() not in player_descriptions:
+                player_descriptions[player.display_name()] = []
+            
+            status_prefix = "❌ " if player.eliminated else ""
+            player_descriptions[player.display_name()].append(
+                f"{status_prefix}\"{player.description}\""
+            )
+    
+    # Format the descriptions by player
+    for player_name, player_descs in player_descriptions.items():
+        descriptions.append(f"{player_name}: {' | '.join(player_descs)}")
     
     if not descriptions:
         return "No descriptions available yet."
         
     # Format the descriptions
-    round_text = f"📝 Descriptions from Round {game.round_number}:\n\n"
-    round_text += "\n".join(descriptions)
-    
-    return round_text
+    return f"📝 All player descriptions up to Round {game.round_number}:\n\n" + "\n".join(descriptions)

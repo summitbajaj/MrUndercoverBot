@@ -244,14 +244,26 @@ async def vote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                     if winner:
                         await game_over(update, context, winner)
                     else:
-                        # Display next player - IMPROVED TRANSITION MESSAGING
+                        # Explicitly ensure we're in playing state
+                        game.state = GameState.PLAYING
+                        
+                        # Get the next player - with error handling
                         next_player_id = game.get_current_player_id()
-                        await update.message.reply_text(
-                            f"📢 Round {game.round_number} begins!\n\n"
-                            f"Players should take turns describing their soccer player without naming them.\n"
-                            f"First player: {game.players[next_player_id].display_name()}\n\n"
-                            f"When finished with your turn, use /done followed by your description."
-                        )
+                        
+                        if next_player_id is not None and next_player_id in game.players:
+                            await update.message.reply_text(
+                                f"📢 Round {game.round_number} begins!\n\n"
+                                f"Players should take turns describing their soccer player without naming them.\n"
+                                f"First player: {game.players[next_player_id].display_name()}\n\n"
+                                f"When finished with your turn, use /done followed by your description."
+                            )
+                        else:
+                            # Emergency fallback if we can't find a valid next player
+                            logger.error(f"Failed to find next player after elimination in chat {chat_id}")
+                            await update.message.reply_text(
+                                f"There was an issue determining the next player. "
+                                f"Please use /next to continue the game."
+                            )
             else:
                 # No elimination (tie with 'none' tiebreaker)
                 await update.message.reply_text(
@@ -261,14 +273,26 @@ async def vote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 # Reset for next round
                 game._prepare_next_round()
                 
-                # Start next round - IMPROVED TRANSITION MESSAGING
+                # Explicitly ensure we're in playing state
+                game.state = GameState.PLAYING
+                
+                # Start next round with error handling
                 next_player_id = game.get_current_player_id()
-                await update.message.reply_text(
-                    f"📢 Round {game.round_number} begins!\n\n"
-                    f"Players should take turns describing their soccer player without naming them.\n"
-                    f"First player: {game.players[next_player_id].display_name()}\n\n"
-                    f"When finished with your turn, use /done followed by your description."
-                )
+                
+                if next_player_id is not None and next_player_id in game.players:
+                    await update.message.reply_text(
+                        f"📢 Round {game.round_number} begins!\n\n"
+                        f"Players should take turns describing their soccer player without naming them.\n"
+                        f"First player: {game.players[next_player_id].display_name()}\n\n"
+                        f"When finished with your turn, use /done followed by your description."
+                    )
+                else:
+                    # Emergency fallback
+                    logger.error(f"Failed to find next player after tie in chat {chat_id}")
+                    await update.message.reply_text(
+                        f"There was an issue determining the next player. "
+                        f"Please use /next to continue the game."
+                    )
     else:
         await update.message.reply_text(
             "Failed to register vote. Make sure both you and the target are valid players."
